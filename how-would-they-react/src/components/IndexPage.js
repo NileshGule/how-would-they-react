@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import QuestionPage from './QuestionPage';
 import CardPage from './CardPage';
-// import Ollama from "ollama";
+import Ollama from "ollama";
 
 const IndexPage = () => {
   const [question, setQuestion] = useState('');

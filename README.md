@@ -7,7 +7,7 @@ This is a fun project to try to build a sample application using local LLM (Loca
 
 ```bash
 
-npx create-react-app my-celebrity-app --template typescript
+npx create-react-app how-would-they-react 
 
 ```
 
