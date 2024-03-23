@@ -20,7 +20,19 @@ Console.WriteLine();
 Console.WriteLine();
 
 
-var moods = new List<string> { "happy", "sad", "angry", "excited", "bored", "confused", "surprised", "scared", "disgusted", "neutral" };
+var moods = new List<string> { 
+    "happy", 
+    "sad", 
+    "angry", 
+    "excited", 
+    "bored", 
+    "confused", 
+    "surprised", 
+    "scared", 
+    "disgusted", 
+    "neutral" 
+};
+
 Random random = new Random();
 
 bool continueConversation;
@@ -41,8 +53,9 @@ do {
         Console.WriteLine();
         AnsiConsole.Markup($"This is how [bold underline blue]{celebrityName}[/] would react in [bold underline red]{selectedMood}[/] mood.");
 
-        context = await ollama.StreamCompletion($"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood?", context, stream => AnsiConsole.Markup($"[green]{stream.Response.EscapeMarkup()}[/]"));
-
+        context = await ollama.StreamCompletion($"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood?", context, stream => {
+                    AnsiConsole.Markup($"[green]{stream.Response.EscapeMarkup()}[/]");
+        });
         Console.WriteLine();
         Console.WriteLine();
     }
