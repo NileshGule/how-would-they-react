@@ -53,7 +53,7 @@ do {
         Console.WriteLine();
         AnsiConsole.Markup($"This is how [bold underline blue]{celebrityName}[/] would react in [bold underline red]{selectedMood}[/] mood.");
 
-        context = await ollama.StreamCompletion($"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood?", context, stream => {
+        context = await ollama.StreamCompletion($"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood? {Environment.NewLine}", context, stream => {
                     AnsiConsole.Markup($"[green]{stream.Response.EscapeMarkup()}[/]");
         });
         Console.WriteLine();
