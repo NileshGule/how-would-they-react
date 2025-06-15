@@ -1,0 +1,24 @@
+@how_would_they_react_API_HostAddress = http://localhost:5137
+
+GET {{how_would_they_react_API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+POST {{how_would_they_react_API_HostAddress}}/react
+
+Content-Type: application/json
+{
+  "celebrityName": "Elon Musk",
+  "tweet": "What do you think about Mars colonization?"
+}
+
+###
+
+POST {{how_would_they_react_API_HostAddress}}/react-with-mood
+Content-Type: application/json
+
+{
+  "celebrityName": "Oprah Winfrey",
+  "tweet": "How do you stay motivated every day?"
+}
