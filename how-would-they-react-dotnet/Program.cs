@@ -1,20 +1,62 @@
 ﻿using OllamaSharp;
 using Spectre.Console;
+using Microsoft.Extensions.AI;
+using Microsoft.AI.Foundry.Local;
+using Microsoft.SemanticKernel;
 
-var uri = new Uri("http://localhost:11434");
-var ollama = new OllamaApiClient(uri);
+// var uri = new Uri("http://localhost:11434");
+var uri = new Uri("http://localhost:5273");
+// var ollama = new OllamaApiClient(uri);
 
-// select a model which should be used for further operations
-ollama.SelectedModel = "llama2";
+// var aliasOrModelId = "qwen2.5-1.5b-instruct-generic-gpu";
+var aliasOrModelId = "deepseek-r1-distill-qwen-7b-generic-gpu"; 
 
-var celebrityName = AnsiConsole.Ask<string>("Which famous person would you like to impersonate today? : ");
+// Foundry Local Initializations
+var modelAlias = "phi-4";
+        // Note: If the model isn't already on-box, it will download and may take a few minutes for this step.
+        var manager = await FoundryLocalManager.StartModelAsync(aliasOrModelId);
+        var model = await manager.GetModelInfoAsync(aliasOrModelId);
+
+        // "Negative Space" programming
+        if(manager == null || model == null)
+        {
+            throw new ArgumentNullException("Trouble initializing model");
+        }
+
+        var localEndpoint = manager.Endpoint; // http://localhost:NNNNN
+        var localApiKey = manager.ApiKey; // "OPEN AI APIKEY"
+
+        // Semantic Kernel Initializations
+        var builder = Kernel.CreateBuilder();
+
+        // Add OpenAI service
+        builder.Services.AddOpenAIChatCompletion(
+            modelId: model.ModelId,
+            endpoint: localEndpoint,
+            apiKey: localApiKey
+        );
+
+        var kernel = builder.Build();
+
+        var celebrityName = AnsiConsole.Ask<string>("Which famous person would you like to impersonate today? : ");
 
 Console.WriteLine();
 AnsiConsole.Markup($"How would [bold underline blue]{celebrityName}[/] reply to the following [bold underline blue]Tweet[/]?{Environment.NewLine}");
 var tweet = Console.ReadLine();
 
-ConversationContext context = null;
-context = await ollama.StreamCompletion($"How would {celebrityName} reply to the following Tweet which says {tweet} ?", context, stream => AnsiConsole.Markup($"[green]{stream.Response.EscapeMarkup()}[/]"));
+        var result = kernel.InvokePromptStreamingAsync($"How would {celebrityName} reply to the following Tweet which says {tweet} ?");
+
+// Stream the result.
+await foreach (var chunk in result)
+{
+    // Console.Write(chunk);
+    AnsiConsole.Markup($"[green]{chunk.ToString().EscapeMarkup()}[/]");
+}
+
+
+
+// ConversationContext context = null;
+// context = await ollama.StreamCompletion($"How would {celebrityName} reply to the following Tweet which says {tweet} ?", context, stream => AnsiConsole.Markup($"[green]{stream.Response.EscapeMarkup()}[/]"));
 
 Console.WriteLine();
 Console.WriteLine();
@@ -53,16 +95,37 @@ do {
         Console.WriteLine();
         AnsiConsole.Markup($"This is how [bold underline blue]{celebrityName}[/] would react in [bold underline red]{selectedMood}[/] mood.");
 
-        context = await ollama.StreamCompletion($"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood? {Environment.NewLine}", context, stream => {
-                    AnsiConsole.Markup($"[green]{stream.Response.EscapeMarkup()}[/]");
-        });
+        result = kernel.InvokePromptStreamingAsync($"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood? {Environment.NewLine}?");
+
+        // Stream the result.
+        await foreach (var chunk in result)
+        {
+            // Console.Write(chunk);
+            AnsiConsole.Markup($"[green]{chunk.ToString().EscapeMarkup()}[/]");
+        }
+
+        // context = await ollama.StreamCompletion($"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood? {Environment.NewLine}", context, stream =>
+        // {
+        //     AnsiConsole.Markup($"[green]{stream.Response.EscapeMarkup()}[/]");
+                    
+        // });
         Console.WriteLine();
         Console.WriteLine();
     }
     
-} while (continueConversation); 
+} while (continueConversation);
 
 Console.WriteLine("Goodbye! But wait ...");
-context = await ollama.StreamCompletion("Say Goodbye in a very funny way based on current time of the day", context, stream => Console.Write(stream.Response));
+
+result = kernel.InvokePromptStreamingAsync($"Say Goodbye in a very funny way based on current time of the day");
+
+        // Stream the result.
+        await foreach (var chunk in result)
+        {
+            // Console.Write(chunk);
+            AnsiConsole.Markup($"[green]{chunk.ToString().EscapeMarkup()}[/]");
+        }
+
+// context = await ollama.StreamCompletion("Say Goodbye in a very funny way based on current time of the day", context, stream => Console.Write(stream.Response));
 
 
