@@ -9,28 +9,42 @@ using OpenAI.Chat;
 // Configurable settings (can be moved to appsettings or env vars)
 var uri = new Uri(Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:5273");
 // var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "deepseek-r1-distill-qwen-7b-generic-gpu";
-var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "qwen2.5-1.5b-instruct-generic-gpu";
+// var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "qwen2.5-1.5b-instruct-generic-gpu";
+
+var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "mistralai-Mistral-7B-Instruct-v0-2-generic-gpu";
 
 
-var moods = new List<string> {
-    "happy", "sad", "angry", "excited", "bored", "confused", "surprised", "scared", "disgusted", "neutral"
+var moods = new List<string>
+{
+    "happy",
+    "sad",
+    "angry",
+    "excited",
+    "bored",
+    "confused",
+    "surprised",
+    "scared",
+    "disgusted",
+    "neutral"
 };
 
 
 // Foundry Local Initializations
 var manager = await FoundryLocalManager.StartModelAsync(aliasOrModelId);
 var model = await manager.GetModelInfoAsync(aliasOrModelId);
+
 if (manager == null || model == null)
     throw new ArgumentNullException("Trouble initializing model");
+
 var localEndpoint = manager.Endpoint;
 var localApiKey = manager.ApiKey;
 
 
-        var key = new ApiKeyCredential(manager.ApiKey);
-        var openAiClient = new OpenAIClient(key, new OpenAIClientOptions
-        {
-            Endpoint = manager.Endpoint
-        });
+var key = new ApiKeyCredential(manager.ApiKey);
+var openAiClient = new OpenAIClient(key, new OpenAIClientOptions
+{
+    Endpoint = manager.Endpoint
+});
 
 
 
@@ -41,13 +55,21 @@ async Task RunConversationAsync()
     AnsiConsole.MarkupLine("[bold underline blue]Welcome to the How Would They React?[/]");
     AnsiConsole.MarkupLine("This is a fun way to see how famous personalities would react to tweets.");
     AnsiConsole.MarkupLine("You can ask how a celebrity would respond to a tweet, and even change their mood for different reactions.");
+
     Console.WriteLine();
+
     AnsiConsole.MarkupLine("Let's get started!");
+
     Console.WriteLine();
+
     AnsiConsole.MarkupLine("You can type in the name of a celebrity, and I will generate a response as if they were replying to a tweet.");
+
     Console.WriteLine();
+
     AnsiConsole.MarkupLine("You can also specify a mood, and I will generate a response based on that mood.");
+
     Console.WriteLine();
+
     var celebrityName = AnsiConsole.Ask<string>("Which famous person would you like to impersonate today? : ");
     Console.WriteLine();
 
@@ -58,20 +80,29 @@ async Task RunConversationAsync()
     // Instead of passing maxTokens here, use the default overload
     // var result = openAiClient.InvokePromptStreamingAsync($"How would {celebrityName} reply to the following Tweet which says {tweet} ?");
 
-    var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet} ?";
+    var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet} ? Use Emojis and slang to make it more realistic.";
 
-    await StreamAndPrintOpenAIAsync(openAiClient, aliasOrModelId, prompt);
+    await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
 
     Console.WriteLine();
     Console.WriteLine();
 
     var random = new Random();
 
-    bool continueConversation;
+    await ContinueConversationLoop(openAiClient, aliasOrModelId, moods, random, tweet, celebrityName);
 
+    Console.WriteLine("Goodbye! But wait ...");
+
+    prompt = "Say Goodbye in a very funny way based on current time of the day";
+    await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
+}
+
+async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrModelId, List<string> moods, Random random, string tweet, string celebrityName)
+{
+    bool continueConversation;
     do
     {
-        continueConversation = AnsiConsole.Confirm("Would you like to continue the conversation and try some other celebrity?");
+        continueConversation = AnsiConsole.Confirm("Would you like to continue and try to impersonate some other celebrity?");
         Console.WriteLine();
         if (continueConversation)
         {
@@ -80,24 +111,19 @@ async Task RunConversationAsync()
             string selectedMood = moods[randomIndex];
             Console.WriteLine();
             AnsiConsole.Markup($"This is how [bold underline blue]{celebrityName}[/] would react in [bold underline red]{selectedMood}[/] mood.");
-            prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood?";
-            await StreamAndPrintOpenAIAsync(openAiClient, aliasOrModelId, prompt);
+            var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood? Use emojis where appropriate to make the tweet sound funny.";
+            await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
             Console.WriteLine();
             Console.WriteLine();
         }
     } while (continueConversation);
-
-    Console.WriteLine("Goodbye! But wait ...");
-
-    prompt = "Say Goodbye in a very funny way based on current time of the day";
-    await StreamAndPrintOpenAIAsync(openAiClient, aliasOrModelId, prompt);
 }
 
 await RunConversationAsync();
 
 
 // Helper method for streaming and printing results with truncation handling
-async Task<string> StreamAndPrintOpenAIAsync(OpenAIClient client, string deploymentOrModelName, string prompt, int maxTokens = 1024*8)
+async Task<string> StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelName, string prompt, int maxTokens = 1024*8)
 {
 
     var chatClient = client.GetChatClient(model?.ModelId);
@@ -144,7 +170,7 @@ async Task<string> StreamAndPrintOpenAIAsync(OpenAIClient client, string deploym
     // if (finishReason == "length")
     // {
     //     AnsiConsole.Markup("[yellow]\n[Truncated: requesting more...]\n[/]");
-    //     response.Append(await StreamAndPrintOpenAIAsync(client, deploymentOrModelName, response.ToString(), maxTokens));
+    //     response.Append(await StreamAndPrintResponse(client, deploymentOrModelName, response.ToString(), maxTokens));
     // }
     // return response.ToString();
 }
