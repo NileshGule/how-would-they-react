@@ -1,7 +1,8 @@
 ﻿using Spectre.Console;
-using Microsoft.Extensions.AI;
+
 using Microsoft.AI.Foundry.Local;
 using System.ClientModel;
+using System.Text;
 
 using OpenAI;
 using OpenAI.Chat;
@@ -84,7 +85,8 @@ async Task RunConversationAsync()
     // var result = openAiClient.InvokePromptStreamingAsync($"How would {celebrityName} reply to the following Tweet which says {tweet} ?");
 
 
-    var prompt = $"{systemMessage}{Environment.NewLine}User: How would {celebrityName} reply to the following Tweet which says {tweet}? Use emojis where appropriate to make the tweet sound funny.";
+    // var prompt = $"{systemMessage}{Environment.NewLine}User: How would {celebrityName} reply to the following Tweet which says {tweet}? Use emojis where appropriate to make the tweet sound funny.";
+    var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet}? ";
     await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
 
     Console.WriteLine();
@@ -95,8 +97,8 @@ async Task RunConversationAsync()
     await ContinueConversationLoop(openAiClient, aliasOrModelId, moods, random, tweet, celebrityName);
 
     Console.WriteLine("Goodbye! But wait ...");
-
-    prompt = $"{systemMessage}{Environment.NewLine}User: Say Goodbye in a very funny way based on current time of the day";
+    
+    prompt = $"Say Goodbye in a very funny way based on current time of the day";
     await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
 }
 
@@ -110,12 +112,19 @@ async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrMod
         if (continueConversation)
         {
             celebrityName = AnsiConsole.Ask<string>("Which famous person would you like to impersonate next? : ");
+
             int randomIndex = random.Next(moods.Count);
             string selectedMood = moods[randomIndex];
+
             Console.WriteLine();
+
             AnsiConsole.Markup($"This is how [bold underline blue]{celebrityName}[/] would react in [bold underline red]{selectedMood}[/] mood.");
-            var prompt = $"{systemMessage}{Environment.NewLine}User: How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood? Use emojis where appropriate to make the tweet sound funny.";
+
+
+            var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood?";
+
             await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
+
             Console.WriteLine();
             Console.WriteLine();
         }
@@ -130,50 +139,27 @@ async Task<string> StreamAndPrintResponse(OpenAIClient client, string deployment
 {
 
     var chatClient = client.GetChatClient(model?.ModelId);
+    
+    List<ChatMessage> messages = 
+    [
+        // System messages represent instructions or other guidance about how the assistant should behave
+        new SystemChatMessage($"{systemMessage }, Use emojis where appropriate to make the tweet sound funny"),
+        // User messages represent user input, whether historical or the most recen tinput
+        new UserChatMessage(prompt)
+    ];
 
-    CollectionResult<StreamingChatCompletionUpdate> completionUpdates = chatClient.CompleteChatStreaming(prompt);
+    AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = chatClient.CompleteChatStreamingAsync(messages);
 
-    foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
+    await foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
     {
         if (completionUpdate.ContentUpdate.Count > 0)
         {
             AnsiConsole.Markup($"[green]{completionUpdate.ContentUpdate[0].Text.EscapeMarkup()}[/]");
-        }
-    }
-    
-    return string.Empty;
 
-    // var chatCompletionsOptions = new ChatCompletionsOptions()
-    // {
-    //     Messages = { new ChatMessage(ChatRole.User, prompt) },
-    //     MaxTokens = maxTokens,
-    //     Temperature = 0.7f,
-    //     NucleusSamplingFactor = 0.95f,
-    //     Stream = true
-    // };
-    // var response = new StringBuilder();
-    // string? finishReason = null;
-    // await foreach (StreamingChatCompletionsUpdate update in client.GetChatCompletionsStreaming(deploymentOrModelName, chatCompletionsOptions))
-    // {
-    //     foreach (var choice in update.Choices)
-    //     {
-    //         if (!string.IsNullOrEmpty(choice.Delta.Content))
-    //         {
-    //             AnsiConsole.Markup($"[green]{choice.Delta.Content.EscapeMarkup()}[/]");
-    //             response.Append(choice.Delta.Content);
-    //         }
-    //         if (!string.IsNullOrEmpty(choice.FinishReason))
-    //         {
-    //             finishReason = choice.FinishReason;
-    //         }
-    //     }
-    // }
-    // Console.WriteLine();
-    // // If truncated, request continuation
-    // if (finishReason == "length")
-    // {
-    //     AnsiConsole.Markup("[yellow]\n[Truncated: requesting more...]\n[/]");
-    //     response.Append(await StreamAndPrintResponse(client, deploymentOrModelName, response.ToString(), maxTokens));
-    // }
-    // return response.ToString();
+        }
+
+    }
+
+
+    return string.Empty;
 }
