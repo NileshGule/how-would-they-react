@@ -49,6 +49,9 @@ var openAiClient = new OpenAIClient(key, new OpenAIClientOptions
 
 
 
+// System message for LLM context
+var systemMessage = "You are an expert impersonator of celebrities. Always reply in the style, tone, and personality of the requested celebrity, and use emojis and slang to make it realistic.";
+
 // Conversation loop logic
 async Task RunConversationAsync()
 {
@@ -80,8 +83,8 @@ async Task RunConversationAsync()
     // Instead of passing maxTokens here, use the default overload
     // var result = openAiClient.InvokePromptStreamingAsync($"How would {celebrityName} reply to the following Tweet which says {tweet} ?");
 
-    var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet} ? Use Emojis and slang to make it more realistic.";
 
+    var prompt = $"{systemMessage}{Environment.NewLine}User: How would {celebrityName} reply to the following Tweet which says {tweet}? Use emojis where appropriate to make the tweet sound funny.";
     await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
 
     Console.WriteLine();
@@ -93,7 +96,7 @@ async Task RunConversationAsync()
 
     Console.WriteLine("Goodbye! But wait ...");
 
-    prompt = "Say Goodbye in a very funny way based on current time of the day";
+    prompt = $"{systemMessage}{Environment.NewLine}User: Say Goodbye in a very funny way based on current time of the day";
     await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
 }
 
@@ -111,7 +114,7 @@ async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrMod
             string selectedMood = moods[randomIndex];
             Console.WriteLine();
             AnsiConsole.Markup($"This is how [bold underline blue]{celebrityName}[/] would react in [bold underline red]{selectedMood}[/] mood.");
-            var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood? Use emojis where appropriate to make the tweet sound funny.";
+            var prompt = $"{systemMessage}{Environment.NewLine}User: How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood? Use emojis where appropriate to make the tweet sound funny.";
             await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
             Console.WriteLine();
             Console.WriteLine();
