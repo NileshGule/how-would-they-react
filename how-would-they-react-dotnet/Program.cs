@@ -17,16 +17,16 @@ var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "mist
 
 var moods = new List<string>
 {
-    "happy",
+    "joyful",
     "sad",
     "angry",
-    "excited",
-    "bored",
-    "confused",
+    "fearful",
     "surprised",
-    "scared",
-    "disgusted",
-    "neutral"
+    "excited",
+    "curious",
+    "bored",
+    "confident",
+    "nervous",
 };
 
 
@@ -47,29 +47,27 @@ var openAiClient = new OpenAIClient(key, new OpenAIClientOptions
     Endpoint = manager.Endpoint
 });
 
-// System message for LLM context
-var systemMessage = "You are an expert impersonator of celebrities. Always reply in the style, tone, and personality of the requested celebrity, and use emojis and slang to make it realistic.";
+await RunConversationAsync();
 
-// Conversation loop logic
-async Task RunConversationAsync()
+void PrintWelcomeMessage()
 {
     AnsiConsole.MarkupLine("[bold underline blue]Welcome to the How Would They React?[/]");
     AnsiConsole.MarkupLine("This is a fun way to see how famous personalities would react to tweets.");
     AnsiConsole.MarkupLine("You can ask how a celebrity would respond to a tweet, and even change their mood for different reactions.");
-
     Console.WriteLine();
-
     AnsiConsole.MarkupLine("Let's get started!");
-
     Console.WriteLine();
-
     AnsiConsole.MarkupLine("You can type in the name of a celebrity, and I will generate a response as if they were replying to a tweet.");
-
     Console.WriteLine();
-
     AnsiConsole.MarkupLine("You can also specify a mood, and I will generate a response based on that mood.");
-
     Console.WriteLine();
+}
+
+// Conversation loop logic
+async Task RunConversationAsync()
+{
+    PrintWelcomeMessage();
+    // Prints the welcome and instructions to the user
 
     var celebrityName = AnsiConsole.Ask<string>("Which famous person would you like to impersonate today? : ");
     Console.WriteLine();
@@ -78,12 +76,8 @@ async Task RunConversationAsync()
 
     var tweet = Console.ReadLine();
 
-    // Instead of passing maxTokens here, use the default overload
-    // var result = openAiClient.InvokePromptStreamingAsync($"How would {celebrityName} reply to the following Tweet which says {tweet} ?");
-
-
-    // var prompt = $"{systemMessage}{Environment.NewLine}User: How would {celebrityName} reply to the following Tweet which says {tweet}? Use emojis where appropriate to make the tweet sound funny.";
     var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet}? ";
+
     await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
 
     Console.WriteLine();
@@ -94,7 +88,7 @@ async Task RunConversationAsync()
     await ContinueConversationLoop(openAiClient, aliasOrModelId, moods, random, tweet, celebrityName);
 
     Console.WriteLine("Goodbye! But wait ...");
-    
+
     prompt = $"Say Goodbye in a very funny way based on current time of the day";
     await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
 }
@@ -129,7 +123,7 @@ async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrMod
     } while (continueConversation);
 }
 
-await RunConversationAsync();
+
 
 
 // Helper method for streaming and printing results with truncation handling
@@ -137,8 +131,9 @@ async Task StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelN
 {
 
     var chatClient = client.GetChatClient(model?.ModelId);
-    
-    List<ChatMessage> messages = 
+
+    var systemMessage = "You are an expert impersonator of celebrities. Always reply in the style, tone, and personality of the requested celebrity, and use emojis and slang to make it realistic.";
+    List<ChatMessage> messages =
     [
         // System messages represent instructions or other guidance about how the assistant should behave
         new SystemChatMessage($"{systemMessage }, Use emojis where appropriate to make the tweet sound funny"),
@@ -147,6 +142,7 @@ async Task StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelN
     ];
 
     AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = chatClient.CompleteChatStreamingAsync(messages);
+
     await foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
     {
         if (completionUpdate.ContentUpdate.Count > 0)
@@ -154,4 +150,5 @@ async Task StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelN
             AnsiConsole.Markup($"[green]{completionUpdate.ContentUpdate[0].Text.EscapeMarkup()}[/]");
         }
     }
+    
 }
