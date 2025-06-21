@@ -47,9 +47,6 @@ var openAiClient = new OpenAIClient(key, new OpenAIClientOptions
     Endpoint = manager.Endpoint
 });
 
-
-
-
 // System message for LLM context
 var systemMessage = "You are an expert impersonator of celebrities. Always reply in the style, tone, and personality of the requested celebrity, and use emojis and slang to make it realistic.";
 
@@ -120,8 +117,9 @@ async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrMod
 
             AnsiConsole.Markup($"This is how [bold underline blue]{celebrityName}[/] would react in [bold underline red]{selectedMood}[/] mood.");
 
-
             var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet} in {selectedMood} mood?";
+
+            Console.WriteLine();
 
             await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
 
@@ -135,7 +133,7 @@ await RunConversationAsync();
 
 
 // Helper method for streaming and printing results with truncation handling
-async Task<string> StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelName, string prompt, int maxTokens = 1024*8)
+async Task StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelName, string prompt)
 {
 
     var chatClient = client.GetChatClient(model?.ModelId);
@@ -149,17 +147,11 @@ async Task<string> StreamAndPrintResponse(OpenAIClient client, string deployment
     ];
 
     AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = chatClient.CompleteChatStreamingAsync(messages);
-
     await foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
     {
         if (completionUpdate.ContentUpdate.Count > 0)
         {
             AnsiConsole.Markup($"[green]{completionUpdate.ContentUpdate[0].Text.EscapeMarkup()}[/]");
-
         }
-
     }
-
-
-    return string.Empty;
 }
