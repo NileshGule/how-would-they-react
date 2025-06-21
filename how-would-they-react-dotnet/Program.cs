@@ -9,10 +9,10 @@ using OpenAI.Chat;
 
 // Configurable settings (can be moved to appsettings or env vars)
 var uri = new Uri(Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:5273");
-// var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "deepseek-r1-distill-qwen-7b-generic-gpu";
+var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "deepseek-r1-distill-qwen-7b-generic-gpu";
 // var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "qwen2.5-1.5b-instruct-generic-gpu";
 
-var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "mistralai-Mistral-7B-Instruct-v0-2-generic-gpu";
+// var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "mistralai-Mistral-7B-Instruct-v0-2-generic-gpu";
 
 
 var moods = new List<string>
@@ -132,7 +132,7 @@ async Task StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelN
 
     var chatClient = client.GetChatClient(model?.ModelId);
 
-    var systemMessage = "You are an expert impersonator of celebrities. Always reply in the style, tone, and personality of the requested celebrity, and use emojis and slang to make it realistic.";
+    var systemMessage = "You are an expert impersonator of celebrities. Always reply in the style, tone, and personality of the requested celebrity, and use emojis and slang to make it realistic. Limit the response to 500 characters, as if it were a tweet. If the response is too long, truncate it to fit within the character limit.";
     List<ChatMessage> messages =
     [
         // System messages represent instructions or other guidance about how the assistant should behave
@@ -141,7 +141,12 @@ async Task StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelN
         new UserChatMessage(prompt)
     ];
 
-    AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = chatClient.CompleteChatStreamingAsync(messages);
+    var chatCompletionsOptions = new ChatCompletionOptions
+    {
+        MaxOutputTokenCount = 8000, // Adjust as needed
+    };
+
+    AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = chatClient.CompleteChatStreamingAsync(messages, chatCompletionsOptions);
 
     await foreach (StreamingChatCompletionUpdate completionUpdate in completionUpdates)
     {
