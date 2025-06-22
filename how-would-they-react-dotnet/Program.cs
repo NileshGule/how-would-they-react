@@ -9,10 +9,10 @@ using OpenAI.Chat;
 
 // Configurable settings (can be moved to appsettings or env vars)
 var uri = new Uri(Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:5273");
-var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "deepseek-r1-distill-qwen-7b-generic-gpu";
+// var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "deepseek-r1-distill-qwen-7b-generic-gpu";
 // var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "qwen2.5-1.5b-instruct-generic-gpu";
 
-// var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "mistralai-Mistral-7B-Instruct-v0-2-generic-gpu";
+var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "mistralai-Mistral-7B-Instruct-v0-2-generic-gpu";
 
 
 var moods = new List<string>
@@ -54,11 +54,16 @@ void PrintWelcomeMessage()
     AnsiConsole.MarkupLine("[bold underline blue]Welcome to the How Would They React?[/]");
     AnsiConsole.MarkupLine("This is a fun way to see how famous personalities would react to tweets.");
     AnsiConsole.MarkupLine("You can ask how a celebrity would respond to a tweet, and even change their mood for different reactions.");
+
     Console.WriteLine();
+
     AnsiConsole.MarkupLine("Let's get started!");
+
     Console.WriteLine();
+
     AnsiConsole.MarkupLine("You can type in the name of a celebrity, and I will generate a response as if they were replying to a tweet.");
     Console.WriteLine();
+
     AnsiConsole.MarkupLine("You can also specify a mood, and I will generate a response based on that mood.");
     Console.WriteLine();
 }
@@ -78,7 +83,7 @@ async Task RunConversationAsync()
 
     var prompt = $"How would {celebrityName} reply to the following Tweet which says {tweet}? ";
 
-    await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
+    await StreamAndPrintResponse(openAiClient, prompt);
 
     Console.WriteLine();
     Console.WriteLine();
@@ -90,7 +95,7 @@ async Task RunConversationAsync()
     Console.WriteLine("Goodbye! But wait ...");
 
     prompt = $"Say Goodbye in a very funny way based on current time of the day";
-    await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
+    await StreamAndPrintResponse(openAiClient, prompt);
 }
 
 async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrModelId, List<string> moods, Random random, string tweet, string celebrityName)
@@ -115,7 +120,7 @@ async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrMod
 
             Console.WriteLine();
 
-            await StreamAndPrintResponse(openAiClient, aliasOrModelId, prompt);
+            await StreamAndPrintResponse(openAiClient, prompt);
 
             Console.WriteLine();
             Console.WriteLine();
@@ -127,23 +132,23 @@ async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrMod
 
 
 // Helper method for streaming and printing results with truncation handling
-async Task StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelName, string prompt)
+async Task StreamAndPrintResponse(OpenAIClient client, string prompt)
 {
-
     var chatClient = client.GetChatClient(model?.ModelId);
 
     var systemMessage = "You are an expert impersonator of celebrities. Always reply in the style, tone, and personality of the requested celebrity, and use emojis and slang to make it realistic. Limit the response to 500 characters, as if it were a tweet. If the response is too long, truncate it to fit within the character limit.";
+
     List<ChatMessage> messages =
     [
         // System messages represent instructions or other guidance about how the assistant should behave
-        new SystemChatMessage($"{systemMessage }, Use emojis where appropriate to make the tweet sound funny"),
-        // User messages represent user input, whether historical or the most recen tinput
+        new SystemChatMessage($"{systemMessage }, Use emojis where appropriate to make the tweet sound more realistic."),
+        // User messages represent user input, whether historical or the most recent input
         new UserChatMessage(prompt)
     ];
 
     var chatCompletionsOptions = new ChatCompletionOptions
     {
-        MaxOutputTokenCount = 8000, // Adjust as needed
+        MaxOutputTokenCount = 1024 * 4, // Adjust as needed
     };
 
     AsyncCollectionResult<StreamingChatCompletionUpdate> completionUpdates = chatClient.CompleteChatStreamingAsync(messages, chatCompletionsOptions);
@@ -155,5 +160,4 @@ async Task StreamAndPrintResponse(OpenAIClient client, string deploymentOrModelN
             AnsiConsole.Markup($"[green]{completionUpdate.ContentUpdate[0].Text.EscapeMarkup()}[/]");
         }
     }
-    
 }
