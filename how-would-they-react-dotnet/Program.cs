@@ -88,9 +88,8 @@ async Task RunConversationAsync()
     Console.WriteLine();
     Console.WriteLine();
 
-    var random = new Random();
 
-    await ContinueConversationLoop(openAiClient, aliasOrModelId, moods, random, tweet, celebrityName);
+    await ContinueConversationLoop(openAiClient, aliasOrModelId, moods, tweet, celebrityName);
 
     Console.WriteLine("Goodbye! But wait ...");
 
@@ -98,8 +97,9 @@ async Task RunConversationAsync()
     await StreamAndPrintResponse(openAiClient, prompt);
 }
 
-async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrModelId, List<string> moods, Random random, string tweet, string celebrityName)
+async Task ContinueConversationLoop(OpenAIClient openAiClient, string aliasOrModelId, List<string> moods, string tweet, string celebrityName)
 {
+    var random = new Random();
     bool continueConversation;
     do
     {
