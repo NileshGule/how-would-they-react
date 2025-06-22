@@ -76,3 +76,9 @@ This application currently uses mock data for demonstration purposes. In a produ
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Related Project: How Would They React .NET Console
+
+This repository also contains a .NET console application that generates AI-powered celebrity reactions using LLMs and Microsoft.AI.Foundry.Local. You can find it in the [`how-would-they-react-dotnet`](./how-would-they-react-dotnet/README.md) folder.
+
+- [How Would They React .NET Console - Setup and Usage](./how-would-they-react-dotnet/README.md)
