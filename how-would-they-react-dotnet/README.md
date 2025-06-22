@@ -57,3 +57,12 @@ dotnet run --project how-would-they-react-dotnet/how-would-they-react-dotnet.csp
 ## Note
 Once the official Microsoft.AI.Foundry.Local SDK is released and available on NuGet, this project will reference it as a normal NuGet package instead of a local project reference.
 
+## Related YouTube Content
+
+### Local AI Models with Foundry Local
+
+![Local AI Models with Foundry Local](../images/Local%20AI%20Models%20with%20Foundry%20Local.png)
+
+Watch the YouTube about setting Foundry Local which references this demo:
+[Local AI Models with Foundry Local - YouTube](https://youtu.be/UYHZY6AbQ-4)
+
