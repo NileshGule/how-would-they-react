@@ -59,10 +59,8 @@ Once the official Microsoft.AI.Foundry.Local SDK is released and available on Nu
 
 ## Related YouTube Content
 
-### Local AI Models with Foundry Local
+[![Local AI Models with Foundry Local](../images/Local%20AI%20Models%20with%20Foundry%20Local.png)](https://youtu.be/UYHZY6AbQ-4)
 
-![Local AI Models with Foundry Local](../images/Local%20AI%20Models%20with%20Foundry%20Local.png)
-
-Watch the YouTube about setting Foundry Local which references this demo:
+Watch the YouTube about setting up Foundry Local which references this demo:
 [Local AI Models with Foundry Local - YouTube](https://youtu.be/UYHZY6AbQ-4)
 
