@@ -56,3 +56,9 @@ Refer to the [Foundry-Local](https://github.com/microsoft/Foundry-Local/) GitHub
 Watch the YouTube about setting up Foundry Local which references this demo:
 [Local AI Models with Foundry Local - YouTube](https://youtu.be/UYHZY6AbQ-4)
 
+
+[![Foundry Local Celebrity Impersonator C#](../images/foundry%20local%20celebrity%20impersonator.png)](https://youtu.be/w5yfetTzIgk)
+
+Watch the new YouTube video about the Foundry Local Celebrity Impersonator C# demo:
+[Foundry Local Celebrity Impersonator C# - YouTube](https://youtu.be/w5yfetTzIgk)
+
