@@ -12,7 +12,11 @@ var uri = new Uri(Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://
 // var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "deepseek-r1-distill-qwen-7b-generic-gpu";
 // var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "qwen2.5-1.5b-instruct-generic-gpu";
 
-var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "mistralai-Mistral-7B-Instruct-v0-2-generic-gpu";
+// var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "phi-4";
+
+var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "Phi-4-mini-reasoning-generic-gpu";
+
+// var aliasOrModelId = Environment.GetEnvironmentVariable("LLM_MODEL_ID") ?? "mistralai-Mistral-7B-Instruct-v0-2-generic-gpu";
 
 
 var moods = new List<string>
@@ -136,7 +140,7 @@ async Task StreamAndPrintResponse(OpenAIClient client, string prompt)
 {
     var chatClient = client.GetChatClient(model?.ModelId);
 
-    var systemMessage = "You are an expert impersonator of celebrities. Always reply in the style, tone, and personality of the requested celebrity, and use emojis and slang to make it realistic. Limit the response to 500 characters, as if it were a tweet. If the response is too long, truncate it to fit within the character limit.";
+    var systemMessage = "You are an expert impersonator of celebrities. Always reply in the style, tone, and personality of the requested celebrity, and use emojis and slang to make it realistic. Limit the response to 300 characters, as if it were a tweet. If the response is too long, truncate it to fit within the character limit.";
 
     List<ChatMessage> messages =
     [

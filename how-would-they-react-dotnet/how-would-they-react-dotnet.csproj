@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" Version="2.2.0-beta.4" />
+    <PackageReference Include="Microsoft.AI.Foundry.Local" Version="0.1.0" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.56.0" />
     
     <PackageReference Include="Spectre.Console" Version="0.48.0" />
@@ -17,8 +18,5 @@
     <PackageReference Include="OpenAI" Version="2.2.0-beta.4" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="/Users/nilesh/projects/foundry-local/sdk/cs/src/Microsoft.AI.Foundry.Local.csproj" />
-  </ItemGroup>
-
+  
 </Project>
